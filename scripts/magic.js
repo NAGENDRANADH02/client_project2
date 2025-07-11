@@ -7,42 +7,48 @@ let delayTimer = null;
 
 function toggleMagicMode() {
   magicMode = !magicMode;
+
+  // Reset everything when magic mode turns off
   if (!magicMode) {
-    // Reset everything
     if (floatingClone) floatingClone.remove();
     floatingClone = null;
     selectedEl = null;
     clearTimeout(delayTimer);
+
+    // Optional: allow previously used images to be reused
+    document.querySelectorAll("img[data-used='true']").forEach(img => {
+      delete img.dataset.used;
+    });
   }
+
   document.body.style.cursor = magicMode ? "grab" : "default";
 }
 
-// Step 2: Click product → 3 sec delay → clone floats
-function initiateMagicClone(originalEl, clientX, clientY) {
-  const rect = originalEl.getBoundingClientRect();
+// Create the floating image
+function initiateMagicClone(cloneEl, clientX, clientY) {
+  const rect = cloneEl.getBoundingClientRect();
   const aspectRatio = rect.width / rect.height;
   const newHeight = window.innerHeight * 0.6;
   const newWidth = newHeight * aspectRatio;
 
-  const clone = originalEl.cloneNode(true);
-  clone.style.position = "fixed";
-  clone.style.top = `${clientY - newHeight / 2}px`;
-  clone.style.left = `${clientX - newWidth / 2}px`;
-  clone.style.width = `${newWidth}px`;
-  clone.style.height = `${newHeight}px`;
-  clone.style.zIndex = "1000";
-  clone.style.pointerEvents = "none";
-  clone.style.transition = "transform 0.3s ease";
-  clone.classList.add("magic-glow");
+  cloneEl.style.position = "fixed";
+  cloneEl.style.top = `${clientY - newHeight / 2}px`;
+  cloneEl.style.left = `${clientX - newWidth / 2}px`;
+  cloneEl.style.width = `${newWidth}px`;
+  cloneEl.style.height = `${newHeight}px`;
+  cloneEl.style.zIndex = "1000";
+  cloneEl.style.pointerEvents = "none";
+  cloneEl.style.transition = "transform 0.3s ease";
+  cloneEl.classList.add("magic-glow");
 
-  document.body.appendChild(clone);
-  floatingClone = clone;
+  document.body.appendChild(cloneEl);
+  floatingClone = cloneEl;
 
   offsetX = newWidth / 2;
   offsetY = newHeight / 2;
 }
 
-// Step 3: Drag
+// Start dragging the floating image
 function startDrag(clientX, clientY) {
   if (!floatingClone) return;
   floatingClone.style.top = `${clientY - offsetY}px`;
@@ -70,30 +76,41 @@ function startDrag(clientX, clientY) {
   document.addEventListener("touchend", endHandler);
 }
 
-// 🔸 Unified handler for both touch and click
+// Trigger magic on product click/touch
 function handleMagicTrigger(e, isTouch = false) {
   if (!magicMode || delayTimer) return;
 
   const target = e.target.closest("img");
   if (!target || target.dataset.used === "true") return;
-  target.dataset.used = "true";
-
 
   const clientX = isTouch ? e.touches[0].clientX : e.clientX;
   const clientY = isTouch ? e.touches[0].clientY : e.clientY;
 
-  // Set 3-second delay for magic pop
+  const cloneForMagic = target.cloneNode(true);
+  target.dataset.used = "true";
+
+  // Optional fade before removal
+  target.style.transition = "opacity 0.3s ease";
+  target.style.opacity = "0";
+
   delayTimer = setTimeout(() => {
     delayTimer = null;
-    initiateMagicClone(target, clientX, clientY);
+
+    // Remove original from DOM after fade
+    setTimeout(() => {
+      target.remove();
+    }, 300);
+
+    // Pop floating magic clone
+    initiateMagicClone(cloneForMagic, clientX, clientY);
   }, 3000);
 }
 
-// Event bindings
+// Mouse & touch events for clicking product
 document.addEventListener("mousedown", (e) => handleMagicTrigger(e, false));
 document.addEventListener("touchstart", (e) => handleMagicTrigger(e, true));
 
-// Step 3: User touches/follows floating image
+// Mouse & touch events for dragging
 document.addEventListener("touchstart", function (e) {
   if (!magicMode || !floatingClone) return;
   e.preventDefault();
