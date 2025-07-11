@@ -1,71 +1,90 @@
 let magicMode = false;
 let selectedEl = null;
-let isDragging = false;
+let offsetX = 0;
+let offsetY = 0;
 
 function toggleMagicMode() {
   magicMode = !magicMode;
   selectedEl = null;
+  document.body.style.cursor = magicMode ? "grab" : "default";
 }
 
-// Handle both mouse and touch events
-function startDrag(el, clientX, clientY) {
+function startDragging(el, clientX, clientY) {
   const rect = el.getBoundingClientRect();
-  selectedEl = el;
+
+  offsetX = clientX - rect.left;
+  offsetY = clientY - rect.top;
 
   el.style.position = "fixed";
-  el.style.top = `${rect.top}px`;
-  el.style.left = `${rect.left}px`;
+  el.style.top = `${clientY - offsetY}px`;
+  el.style.left = `${clientX - offsetX}px`;
   el.style.width = `${rect.width}px`;
   el.style.height = `${rect.height}px`;
   el.style.zIndex = "999";
   el.style.pointerEvents = "none";
-  el.style.transition = "none";
 
   document.body.appendChild(el);
-  isDragging = true;
-
-  const moveHandler = (e) => {
-    if (!isDragging || !selectedEl) return;
-    let x = e.clientX || (e.touches && e.touches[0].clientX);
-    let y = e.clientY || (e.touches && e.touches[0].clientY);
-    selectedEl.style.top = `${y - rect.height / 2}px`;
-    selectedEl.style.left = `${x - rect.width / 2}px`;
-  };
-
-  const endHandler = () => {
-    if (selectedEl) selectedEl.remove();
-    selectedEl = null;
-    isDragging = false;
-    document.removeEventListener("mousemove", moveHandler);
-    document.removeEventListener("mouseup", endHandler);
-    document.removeEventListener("touchmove", moveHandler);
-    document.removeEventListener("touchend", endHandler);
-  };
-
-  document.addEventListener("mousemove", moveHandler);
-  document.addEventListener("mouseup", endHandler);
-  document.addEventListener("touchmove", moveHandler);
-  document.addEventListener("touchend", endHandler);
+  selectedEl = el;
 }
 
-// Touch support
+function moveSelected(clientX, clientY) {
+  if (selectedEl) {
+    selectedEl.style.top = `${clientY - offsetY}px`;
+    selectedEl.style.left = `${clientX - offsetX}px`;
+  }
+}
+
+function endDragging() {
+  if (selectedEl) {
+    selectedEl.remove();
+    selectedEl = null;
+  }
+}
+
+// 🔸 Touch Support
 document.addEventListener("touchstart", function (e) {
   if (!magicMode) return;
 
-  const touchedEl = e.target.closest("img");
-  if (!touchedEl) return;
+  const target = e.target.closest("img");
+  if (!target) return;
+  e.preventDefault();
 
-  e.preventDefault(); // Prevent scrolling
-  startDrag(touchedEl, e.touches[0].clientX, e.touches[0].clientY);
+  startDragging(target, e.touches[0].clientX, e.touches[0].clientY);
+
+  document.addEventListener("touchmove", onTouchMove);
+  document.addEventListener("touchend", onTouchEnd);
 });
 
-// Mouse support
+function onTouchMove(e) {
+  moveSelected(e.touches[0].clientX, e.touches[0].clientY);
+}
+
+function onTouchEnd() {
+  endDragging();
+  document.removeEventListener("touchmove", onTouchMove);
+  document.removeEventListener("touchend", onTouchEnd);
+}
+
+// 🔸 Mouse Support
 document.addEventListener("mousedown", function (e) {
   if (!magicMode) return;
 
-  const clickedEl = e.target.closest("img");
-  if (!clickedEl) return;
+  const target = e.target.closest("img");
+  if (!target) return;
+  e.preventDefault();
 
-  e.preventDefault(); // Prevent image drag ghost
-  startDrag(clickedEl, e.clientX, e.clientY);
+  startDragging(target, e.clientX, e.clientY);
+
+  document.addEventListener("mousemove", onMouseMove);
+  document.addEventListener("mouseup", onMouseUp);
 });
+
+function onMouseMove(e) {
+  moveSelected(e.clientX, e.clientY);
+}
+
+function onMouseUp() {
+  endDragging();
+  document.removeEventListener("mousemove", onMouseMove);
+  document.removeEventListener("mouseup", onMouseUp);
+}
