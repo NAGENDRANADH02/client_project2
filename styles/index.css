@@ -365,3 +365,21 @@ a {
   z-index: 10000;
   pointer-events: none;
 }
+img {
+  user-drag: none;
+  -webkit-user-drag: none;
+  touch-action: none;
+}
+
+#magicBtn {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  padding: 8px 12px;
+  background-color: #ffcb05;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 1000;
+}
+
