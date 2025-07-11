@@ -2,26 +2,38 @@ let magicMode = false;
 let selectedEl = null;
 let offsetX = 0;
 let offsetY = 0;
+let delayTimer = null;
 
 function toggleMagicMode() {
   magicMode = !magicMode;
   selectedEl = null;
-  document.body.style.cursor = magicMode ? "grab" : "default";
+  if (magicMode) {
+    document.body.style.cursor = "grab";
+  } else {
+    document.body.style.cursor = "default";
+    clearTimeout(delayTimer);
+  }
 }
 
 function startDragging(el, clientX, clientY) {
   const rect = el.getBoundingClientRect();
 
-  offsetX = clientX - rect.left;
-  offsetY = clientY - rect.top;
+  offsetX = rect.width / 2;
+  offsetY = rect.height / 2;
+
+  // Resize image to 60% of screen height, keep aspect ratio
+  const aspectRatio = rect.width / rect.height;
+  const newHeight = window.innerHeight * 0.6;
+  const newWidth = newHeight * aspectRatio;
 
   el.style.position = "fixed";
-  el.style.top = `${clientY - offsetY}px`;
-  el.style.left = `${clientX - offsetX}px`;
-  el.style.width = `${rect.width}px`;
-  el.style.height = `${rect.height}px`;
+  el.style.top = `${clientY - newHeight / 2}px`;
+  el.style.left = `${clientX - newWidth / 2}px`;
+  el.style.width = `${newWidth}px`;
+  el.style.height = `${newHeight}px`;
   el.style.zIndex = "999";
   el.style.pointerEvents = "none";
+  el.style.transition = "none";
 
   document.body.appendChild(el);
   selectedEl = el;
@@ -41,18 +53,23 @@ function endDragging() {
   }
 }
 
-// 🔸 Touch Support
+// Touch Support
 document.addEventListener("touchstart", function (e) {
-  if (!magicMode) return;
+  if (!magicMode || delayTimer) return;
 
   const target = e.target.closest("img");
   if (!target) return;
   e.preventDefault();
 
-  startDragging(target, e.touches[0].clientX, e.touches[0].clientY);
+  const clientX = e.touches[0].clientX;
+  const clientY = e.touches[0].clientY;
 
-  document.addEventListener("touchmove", onTouchMove);
-  document.addEventListener("touchend", onTouchEnd);
+  delayTimer = setTimeout(() => {
+    delayTimer = null;
+    startDragging(target, clientX, clientY);
+    document.addEventListener("touchmove", onTouchMove);
+    document.addEventListener("touchend", onTouchEnd);
+  }, 3000); // 3 seconds
 });
 
 function onTouchMove(e) {
@@ -65,18 +82,23 @@ function onTouchEnd() {
   document.removeEventListener("touchend", onTouchEnd);
 }
 
-// 🔸 Mouse Support
+// Mouse Support
 document.addEventListener("mousedown", function (e) {
-  if (!magicMode) return;
+  if (!magicMode || delayTimer) return;
 
   const target = e.target.closest("img");
   if (!target) return;
   e.preventDefault();
 
-  startDragging(target, e.clientX, e.clientY);
+  const clientX = e.clientX;
+  const clientY = e.clientY;
 
-  document.addEventListener("mousemove", onMouseMove);
-  document.addEventListener("mouseup", onMouseUp);
+  delayTimer = setTimeout(() => {
+    delayTimer = null;
+    startDragging(target, clientX, clientY);
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  }, 3000); // 3 seconds
 });
 
 function onMouseMove(e) {
