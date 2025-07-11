@@ -1,124 +1,90 @@
 let magicMode = false;
 let selectedEl = null;
-let floatingClone = null;
 let offsetX = 0;
 let offsetY = 0;
-let delayTimer = null;
 
 function toggleMagicMode() {
   magicMode = !magicMode;
-
-  // Reset everything when magic mode turns off
-  if (!magicMode) {
-    if (floatingClone) floatingClone.remove();
-    floatingClone = null;
-    selectedEl = null;
-    clearTimeout(delayTimer);
-
-    // Optional: allow previously used images to be reused
-    document.querySelectorAll("img[data-used='true']").forEach(img => {
-      delete img.dataset.used;
-    });
-  }
-
+  selectedEl = null;
   document.body.style.cursor = magicMode ? "grab" : "default";
 }
 
-// Create the floating image
-function initiateMagicClone(cloneEl, clientX, clientY) {
-  const rect = cloneEl.getBoundingClientRect();
-  const aspectRatio = rect.width / rect.height;
-  const newHeight = window.innerHeight * 0.6;
-  const newWidth = newHeight * aspectRatio;
+function startDragging(el, clientX, clientY) {
+  const rect = el.getBoundingClientRect();
 
-  cloneEl.style.position = "fixed";
-  cloneEl.style.top = `${clientY - newHeight / 2}px`;
-  cloneEl.style.left = `${clientX - newWidth / 2}px`;
-  cloneEl.style.width = `${newWidth}px`;
-  cloneEl.style.height = `${newHeight}px`;
-  cloneEl.style.zIndex = "1000";
-  cloneEl.style.pointerEvents = "none";
-  cloneEl.style.transition = "transform 0.3s ease";
-  cloneEl.classList.add("magic-glow");
+  offsetX = clientX - rect.left;
+  offsetY = clientY - rect.top;
 
-  document.body.appendChild(cloneEl);
-  floatingClone = cloneEl;
+  el.style.position = "fixed";
+  el.style.top = `${clientY - offsetY}px`;
+  el.style.left = `${clientX - offsetX}px`;
+  el.style.width = `${rect.width}px`;
+  el.style.height = `${rect.height}px`;
+  el.style.zIndex = "999";
+  el.style.pointerEvents = "none";
 
-  offsetX = newWidth / 2;
-  offsetY = newHeight / 2;
+  document.body.appendChild(el);
+  selectedEl = el;
 }
 
-// Start dragging the floating image
-function startDrag(clientX, clientY) {
-  if (!floatingClone) return;
-  floatingClone.style.top = `${clientY - offsetY}px`;
-  floatingClone.style.left = `${clientX - offsetX}px`;
-
-  const moveHandler = (e) => {
-    const x = e.touches ? e.touches[0].clientX : e.clientX;
-    const y = e.touches ? e.touches[0].clientY : e.clientY;
-    floatingClone.style.top = `${y - offsetY}px`;
-    floatingClone.style.left = `${x - offsetX}px`;
-  };
-
-  const endHandler = () => {
-    floatingClone.remove();
-    floatingClone = null;
-    document.removeEventListener("mousemove", moveHandler);
-    document.removeEventListener("mouseup", endHandler);
-    document.removeEventListener("touchmove", moveHandler);
-    document.removeEventListener("touchend", endHandler);
-  };
-
-  document.addEventListener("mousemove", moveHandler);
-  document.addEventListener("mouseup", endHandler);
-  document.addEventListener("touchmove", moveHandler);
-  document.addEventListener("touchend", endHandler);
+function moveSelected(clientX, clientY) {
+  if (selectedEl) {
+    selectedEl.style.top = `${clientY - offsetY}px`;
+    selectedEl.style.left = `${clientX - offsetX}px`;
+  }
 }
 
-// Trigger magic on product click/touch
-function handleMagicTrigger(e, isTouch = false) {
-  if (!magicMode || delayTimer) return;
+function endDragging() {
+  if (selectedEl) {
+    selectedEl.remove();
+    selectedEl = null;
+  }
+}
+
+// 🔸 Touch Support
+document.addEventListener("touchstart", function (e) {
+  if (!magicMode) return;
 
   const target = e.target.closest("img");
-  if (!target || target.dataset.used === "true") return;
+  if (!target) return;
+  e.preventDefault();
 
-  const clientX = isTouch ? e.touches[0].clientX : e.clientX;
-  const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+  startDragging(target, e.touches[0].clientX, e.touches[0].clientY);
 
-  const cloneForMagic = target.cloneNode(true);
-  target.dataset.used = "true";
+  document.addEventListener("touchmove", onTouchMove);
+  document.addEventListener("touchend", onTouchEnd);
+});
 
-  // Optional fade before removal
-  target.style.transition = "opacity 0.3s ease";
-  target.style.opacity = "0";
-
-  delayTimer = setTimeout(() => {
-    delayTimer = null;
-
-    // Remove original from DOM after fade
-    setTimeout(() => {
-      target.remove();
-    }, 300);
-
-    // Pop floating magic clone
-    initiateMagicClone(cloneForMagic, clientX, clientY);
-  }, 3000);
+function onTouchMove(e) {
+  moveSelected(e.touches[0].clientX, e.touches[0].clientY);
 }
 
-// Mouse & touch events for clicking product
-document.addEventListener("mousedown", (e) => handleMagicTrigger(e, false));
-document.addEventListener("touchstart", (e) => handleMagicTrigger(e, true));
+function onTouchEnd() {
+  endDragging();
+  document.removeEventListener("touchmove", onTouchMove);
+  document.removeEventListener("touchend", onTouchEnd);
+}
 
-// Mouse & touch events for dragging
-document.addEventListener("touchstart", function (e) {
-  if (!magicMode || !floatingClone) return;
-  e.preventDefault();
-  startDrag(e.touches[0].clientX, e.touches[0].clientY);
-});
-
+// 🔸 Mouse Support
 document.addEventListener("mousedown", function (e) {
-  if (!magicMode || !floatingClone) return;
+  if (!magicMode) return;
+
+  const target = e.target.closest("img");
+  if (!target) return;
   e.preventDefault();
-  startDrag(e.clientX, e.clientY);
+
+  startDragging(target, e.clientX, e.clientY);
+
+  document.addEventListener("mousemove", onMouseMove);
+  document.addEventListener("mouseup", onMouseUp);
 });
+
+function onMouseMove(e) {
+  moveSelected(e.clientX, e.clientY);
+}
+
+function onMouseUp() {
+  endDragging();
+  document.removeEventListener("mousemove", onMouseMove);
+  document.removeEventListener("mouseup", onMouseUp);
+}
