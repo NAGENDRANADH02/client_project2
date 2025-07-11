@@ -20,7 +20,7 @@ function toggleMagicMode() {
 function initiateMagicClone(originalEl, clientX, clientY) {
   const rect = originalEl.getBoundingClientRect();
   const aspectRatio = rect.width / rect.height;
-  const newHeight = window.innerHeight * 0.6;
+  const newHeight = window.innerHeight * 0.8;
   const newWidth = newHeight * aspectRatio;
 
   const clone = originalEl.cloneNode(true);
