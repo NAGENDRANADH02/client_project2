@@ -75,8 +75,9 @@ function handleMagicTrigger(e, isTouch = false) {
   if (!magicMode || delayTimer) return;
 
   const target = e.target.closest("img");
-  if (!target) return;
-  e.preventDefault();
+  if (!target || target.dataset.used === "true") return;
+  target.dataset.used = "true";
+
 
   const clientX = isTouch ? e.touches[0].clientX : e.clientX;
   const clientY = isTouch ? e.touches[0].clientY : e.clientY;
