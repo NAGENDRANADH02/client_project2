@@ -389,4 +389,10 @@ img {
   cursor: pointer;
   z-index: 1000;
 }
+.magic-glow {
+  box-shadow: 0 0 30px rgba(255, 255, 0, 0.6);
+  border-radius: 12px;
+  transform: scale(1.05);
+}
+
 
