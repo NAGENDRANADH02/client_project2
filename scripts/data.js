@@ -412,8 +412,8 @@ let veg_data = () => {
       {
         cat: "soft",
         image: "./images/kitkat.png", // ✅ correct relative path
-        name: "Red bull Energy drink",
-        wt: "250 ml",
+        name: "Kit Kat",
+        wt: "100g",
        price: "110"
       },
       {
