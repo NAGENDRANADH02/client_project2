@@ -3,11 +3,11 @@ let selectedEl = null;
 let offsetX = 0;
 let offsetY = 0;
 
-function toggleMagicMode() {
+window.toggleMagicMode = function () {
   magicMode = !magicMode;
   selectedEl = null;
   document.body.style.cursor = magicMode ? "grab" : "default";
-}
+};
 
 function startDragging(el, clientX, clientY) {
   const rect = el.getBoundingClientRect();
