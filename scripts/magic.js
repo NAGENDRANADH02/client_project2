@@ -3,13 +3,14 @@ let selectedEl = null;
 let offsetX = 0;
 let offsetY = 0;
 
-// ✅ Make toggleMagicMode globally accessible
+// ✅ Toggle magic mode globally
 window.toggleMagicMode = function () {
   magicMode = !magicMode;
   selectedEl = null;
   document.body.style.cursor = magicMode ? "grab" : "default";
 };
 
+// ✅ Start dragging an image
 function startDragging(el, clientX, clientY) {
   const rect = el.getBoundingClientRect();
 
@@ -17,8 +18,8 @@ function startDragging(el, clientX, clientY) {
   offsetY = clientY - rect.top;
 
   el.style.position = "fixed";
-  el.style.top = `${clientY - offsetY}px`;       // ✅ Use backticks
-  el.style.left = `${clientX - offsetX}px`;      // ✅
+  el.style.top = `${clientY - offsetY}px`;
+  el.style.left = `${clientX - offsetX}px`;
   el.style.width = `${rect.width}px`;
   el.style.height = `${rect.height}px`;
   el.style.zIndex = "999";
@@ -28,13 +29,14 @@ function startDragging(el, clientX, clientY) {
   selectedEl = el;
 }
 
+// ✅ Move the dragged image
 function moveSelected(clientX, clientY) {
-  if (selectedEl) {
-    selectedEl.style.top = `${clientY - offsetY}px`;   // ✅
-    selectedEl.style.left = `${clientX - offsetX}px`;  // ✅
-  }
+  if (!selectedEl) return;
+  selectedEl.style.top = `${clientY - offsetY}px`;
+  selectedEl.style.left = `${clientX - offsetX}px`;
 }
 
+// ✅ End dragging
 function endDragging() {
   if (selectedEl) {
     selectedEl.remove();
