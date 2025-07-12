@@ -411,11 +411,10 @@ let veg_data = () => {
       // soft drink.............0-18
       {
         cat: "soft",
-        image:
-          "https://cdn.grofers.com/cdn-cgi/image/f=auto,fit=scale-down,q=85,metadata=none,w=250,h=250/app/images/products/sliding_image/45655a.jpg",
+        image: "./images/kitkat.png", // ✅ correct relative path
         name: "Red bull Energy drink",
         wt: "250 ml",
-        price: "110",
+       price: "110"
       },
       {
         cat: "soft",
