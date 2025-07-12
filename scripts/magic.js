@@ -3,6 +3,7 @@ let selectedEl = null;
 let offsetX = 0;
 let offsetY = 0;
 
+// ✅ Make toggleMagicMode globally accessible
 window.toggleMagicMode = function () {
   magicMode = !magicMode;
   selectedEl = null;
@@ -16,8 +17,8 @@ function startDragging(el, clientX, clientY) {
   offsetY = clientY - rect.top;
 
   el.style.position = "fixed";
-  el.style.top = `${clientY - offsetY}px`;
-  el.style.left = `${clientX - offsetX}px`;
+  el.style.top = `${clientY - offsetY}px`;       // ✅ Use backticks
+  el.style.left = `${clientX - offsetX}px`;      // ✅
   el.style.width = `${rect.width}px`;
   el.style.height = `${rect.height}px`;
   el.style.zIndex = "999";
@@ -29,8 +30,8 @@ function startDragging(el, clientX, clientY) {
 
 function moveSelected(clientX, clientY) {
   if (selectedEl) {
-    selectedEl.style.top = `${clientY - offsetY}px`;
-    selectedEl.style.left = `${clientX - offsetX}px`;
+    selectedEl.style.top = `${clientY - offsetY}px`;   // ✅
+    selectedEl.style.left = `${clientX - offsetX}px`;  // ✅
   }
 }
 
