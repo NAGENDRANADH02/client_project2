@@ -376,9 +376,9 @@ a {
   pointer-events: none;
 }
 img {
-  user-drag: none;
-  -webkit-user-drag: none;
-  touch-action: none;
+  -webkit-user-drag: none; /* ✅ For Safari, Chrome */
+  user-select: none;        /* ✅ Prevent text selection while dragging */
+  touch-action: manipulation; /* ✅ For touch devices like iPad */
 }
 
  
