@@ -360,7 +360,10 @@ a {
   border-radius: 50%;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
   cursor: pointer;
-  z-index: 9999;
+  z-index: 10000;
+  transform: none !important;   /* Prevent inherited zoom */
+  user-select: none;
+  pointer-events: auto;
 }
 
 /* Floating product copy */
@@ -386,15 +389,23 @@ img {
 }
 #magicBtn {
   position: fixed;
-  top: 10px;
-  right: 10px;
-  padding: 10px 20px;
-  font-size: 1rem;
-  z-index: 10000;
-  background: #ffcb05;
+  top: 20px;
+  right: 20px;
+  padding: 10px 16px;
+  background-color: #555;
+  color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
+  z-index: 10000;
+  transition: background-color 0.3s ease;
 }
+
+#magic-key.active {
+  background-color: #90EE90; /* Pink glow when active */
+  color: white;
+  transform: scale(1.1);
+}
+
 
 
