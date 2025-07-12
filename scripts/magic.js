@@ -17,7 +17,7 @@ window.toggleMagicMode = function () {
   }
 };
 
-// ✅ Touch Support
+// ✅ Touch support for starting drop
 document.addEventListener("touchstart", function (e) {
   if (!magicMode) return;
 
@@ -28,7 +28,7 @@ document.addEventListener("touchstart", function (e) {
   startDropAnimation(target, e.touches[0].clientX, e.touches[0].clientY);
 });
 
-// ✅ Mouse Support
+// ✅ Mouse support for starting drop
 document.addEventListener("mousedown", function (e) {
   if (!magicMode) return;
 
@@ -39,7 +39,7 @@ document.addEventListener("mousedown", function (e) {
   startDropAnimation(target, e.clientX, e.clientY);
 });
 
-// ✅ Start the delayed pop + drop
+// ✅ Start pop + drop animation after delay
 function startDropAnimation(target, clientX, clientY) {
   setTimeout(() => {
     initiateDrop(target);
@@ -47,7 +47,7 @@ function startDropAnimation(target, clientX, clientY) {
   }, 4000);
 }
 
-// ✅ Handle the pop and gravity drop
+// ✅ Handle the drop animation with bounce
 function initiateDrop(el) {
   const rect = el.getBoundingClientRect();
 
@@ -110,11 +110,12 @@ function initiateDrop(el) {
   }, 400);
 }
 
-// ✅ Make the dropped image draggable
+// ✅ Enable drag (Mouse + Touch)
 function makeDraggable(el) {
   el.style.pointerEvents = "auto";
   el.style.cursor = "grab";
 
+  // Mouse support
   el.addEventListener("mousedown", (e) => {
     selectedEl = el;
     offsetX = e.clientX - el.getBoundingClientRect().left;
@@ -123,9 +124,20 @@ function makeDraggable(el) {
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
   });
+
+  // Touch support
+  el.addEventListener("touchstart", (e) => {
+    selectedEl = el;
+    const touch = e.touches[0];
+    offsetX = touch.clientX - el.getBoundingClientRect().left;
+    offsetY = touch.clientY - el.getBoundingClientRect().top;
+
+    document.addEventListener("touchmove", onTouchMove, { passive: false });
+    document.addEventListener("touchend", onTouchEnd);
+  });
 }
 
-// ✅ Drag logic
+// ✅ Drag logic for mouse
 function onMouseMove(e) {
   if (!selectedEl) return;
   selectedEl.style.top = `${e.clientY - offsetY}px`;
@@ -140,4 +152,23 @@ function onMouseUp() {
 
   document.removeEventListener("mousemove", onMouseMove);
   document.removeEventListener("mouseup", onMouseUp);
+}
+
+// ✅ Drag logic for touch
+function onTouchMove(e) {
+  if (!selectedEl) return;
+  const touch = e.touches[0];
+  selectedEl.style.top = `${touch.clientY - offsetY}px`;
+  selectedEl.style.left = `${touch.clientX - offsetX}px`;
+  e.preventDefault(); // prevent screen scrolling while dragging
+}
+
+function onTouchEnd() {
+  if (selectedEl) {
+    selectedEl.remove();
+    selectedEl = null;
+  }
+
+  document.removeEventListener("touchmove", onTouchMove);
+  document.removeEventListener("touchend", onTouchEnd);
 }
