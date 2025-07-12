@@ -376,10 +376,12 @@ a {
   pointer-events: none;
 }
 img {
-  -webkit-user-drag: none; /* ✅ For Safari, Chrome */
-  user-select: none;        /* ✅ Prevent text selection while dragging */
-  touch-action: manipulation; /* ✅ For touch devices like iPad */
+  -webkit-user-drag: none;
+  user-drag: none;
+  touch-action: none;
+  user-select: none;
 }
+
 
  
 .magic-glow {
